@@ -1,15 +1,23 @@
 <!DOCTYPE html>
-<html lang="zh-CN">
+<html lang="en">
   <head>
-    <meta charset="UTF-8">
-    <link rel="icon" href="/favicon.ico">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Vite App</title>
-    <script type="module" crossorigin src="/assets/index-35aed2fc.js"></script>
-    <link rel="stylesheet" href="/assets/index-1fdc9e9d.css">
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Animated Navigation</title>
+    <link rel="stylesheet" href="./style/style.css" />
+    <link rel="stylesheet" href="./style/github-markdown.min.css">
+    <link rel="stylesheet" href="./style/github.min.css">
   </head>
   <body>
-    <div id="app"></div>
+    <div id="menu">
+        <a href="https://git-23.github.io/running_page/">running-page</a>
+        <br>
+    </div>
+
+    <div id="content" class="markdown-body"></div>
     
+    <script src="./scripts/marked.min.js"></script>
+    <script src="./scripts/highlight.min.js"></script>
+    <script src="./scripts/script.js"></script>
   </body>
 </html>
