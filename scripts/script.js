@@ -1,4 +1,4 @@
-let docsList = ['markdown.md'];
+let docsList = ['markdown.md','dom.md'];
 
 function renderButton(docsList) {
     for (let item in docsList) {
