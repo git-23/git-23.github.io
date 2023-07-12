@@ -107,3 +107,103 @@ DOM 是由节点按照不同层级抽象成的树形结构。第一层是`docume
 - `replaceWith(node)`：用参数节点替换当前节点。
 
 *插入或替换的节点除了元素节点外，也可以选择文本节点。用字符串作为参数即可。*
+
+## Document 对象
+
+`document`节点对象代表整个文档，只要浏览器载入 HTML 文档，该对象就存在了。
+
+### `document`对象的属性
+
+**快捷方式属性**
+
+- `defaultView`：返回节点所属的`window`对象。
+- `doctype`：返回文档类型节点。
+- `ducumentElement`：返回文档的根元素节点，一般是`html`所在的节点。
+- `body`：返回`body`元素节点，可写。
+- `head`：返回`head`元素节点，可写。
+- `scrollingElement`：返回文档的滚动元素，一般是`html`元素节点。
+- `dctiveElement`：返回当前获得焦点的元素节点。
+- `fullscreenElement`：返回以全屏状态展示的元素节点。
+
+**节点集合属性**
+
+- `links`：返回一个`HTMLCollection`实例，包括所有设置了`href`属性的`<a>`和`<area>`节点。
+- `forms`：返回一个`HTMLCollection`实例，包括文档中所有的`form`节点。
+- `images`：返回一个`HTMLCollection`实例，包括页面中所有`img`节点。
+- `embeds`
+- `plugins`
+- `scripts`
+- `styleSheets`：返回一个StyleSheetList实例，包括网页内嵌或引入的样式表集合。
+
+**文档静态信息属性**
+
+- `documentURI`、`URL`：返回当前文档的网址。
+- `domain`：返回当前文档的域名，次级域名可以把该属性设置为对应的上级域名，达到同源共享 Cookie 等资源。设置该属性时会导致端口改为`null`。
+- `location`：返回浏览器提供的原生对象`Location`。
+- `lastModified`：返回一个字符串，表示文档最近修改的时间。页面有 Javascript 生成的内容，总是返回当前时间。
+- `title`：返回当前文档的标题，可写。
+- `characterSet`：返回当前文档的编码。
+- `referrer`：返回一个字符串，表示当前文档的访问者来自哪里。
+- `dir`：返回一个字符串，表示文字方向。
+- `compatMode`：返回当前浏览器处理文档的模式。
+
+**文档状态属性**
+
+- `hidden`：返回一个布尔值，表示当前窗口是否可见。
+- `visibilityState`：返回文档的可见状态。
+    - `visible`：页面可见。
+    - `hidden`：页面不可见。
+    - `prerender`：页面正在渲染。
+    - `unloaded`：圆面从内存里面卸载了。
+- `readyState`：返回当前文档的状态。
+    - `loading`：加载 HTML 代码阶段。
+    - `interactive`：加载外部资源阶段。
+    - `complete`：加载完成。
+- `cookie`
+- `designMode`：具有`on`、`off`两个值，控制当前文档是否可编辑。
+- `currentScript`：用在`<script>`脚本中，返回当前脚本所在的 DOM 节点。
+- `implementation`：返回一个`DOMImplementation`对象，该对象有三个方法。
+    - `createDocument()`：创建一个 XML文档。
+    - `createHTMLDocuemnt()`：创建一个 HTML 文档。
+    - `createDocuemntType()`：创建一个 DocumentType 对象。
+
+### `document`对象的方法
+
+- `open()`：清除当前文件所有内容，使当前文件处于可写状态。
+- `write()`：向当前文档写入内容。
+- `writeln()`：向当前文档写入内容，会添加换行符。
+- `close()`：关闭用`open()`方法打开的文档。
+
+现在有更符合标准的方法，比如`innerHTML`属性赋值，尽量避免使用`write()`方法。
+
+- `querySelector()`：使用一个 CSS 选择器作为参数，返回第一个匹配的元素节点。
+- `querySelsctorAll()`：返回一个`NodeList`对象，包含所有匹配该选择器的节点。
+- `getElementsByTagName()`：参数是 HTML 标签名，返回一个`HTMLCollection`实例，实时反应 HTML 文档的变化，可以在任意元素节点上调用。
+- `getElementsByClassName()`：参数是`class`类名，返回一个`HTMLCollection`实例，实时反应 HTML 文档的变化，可以在任意元素节点上调用。
+- `getElementsByName()`：选取拥有`name`属性的元素，返回一个`NodeList`实例。
+- `getElementById()`：选取指定`id`的元素节点，比`qurrySelector()`方法效率要高。
+- `elementFromPoint()`：返回位于页面指定位置最上层的元素节点。
+- `elementsFromPoint()`：返回一个数组，成员是指定位置的所有元素。
+- `createElement()`：参数是元素的标签名，返回生成的元素节点。
+- `createTextNode()`：生成文本节点，参数是生成文本节点的内容。
+- `createAttribute()`：生成一个新的属性节点，参数是生成属性节点的名称。
+- `createComment()`：生成一个新的注释节点，参数是字符串，生成注释节点的内容。
+- `createDocumentFragment()`：生成一个空的文档片段对象。
+- `createEvent()`：生成一个事件对象，参数是事件类型。
+- `addEventListener()`、`removeEventListener()`、`dispatchEvent()`：继承自`EventTarget`接口。
+- `hasFocus()`：返回一个布尔值，表示当前文档是否有元素被激活或获取焦点。
+- `adoptNode()`：将参数节点及其子节点从原有文档移除，归属到当前文档。
+- `importNode(node, deep)`：将参数节点及其子节点拷贝，归属到当前文档。可以选择浅拷贝和深拷贝，默认为浅拷贝。
+- `createNodeIterator(node, para)`：返回一个子节点遍历器，第一个参数是根节点，第二个参数是所要遍历的节点类型。返回的第一个节点总是根节点。
+    - `NodeFilter.SHOW_ALL`：所有节点
+    - `NodeFilter.SHOW_ELEMENT`：元素节点
+    - `NodeFilter.SHOW_TEXT`：文本节点
+    - `NodeFilter.SHOW_COMMENT`：注释节点
+- `createTreeWalker()`：参数同`createNodeIterator()`，区别在于返回的是`TreeWalker`实例，并且第一个节点不是根节点。
+- `execCommand(command, showDefaultUI, input)`：在可编辑的情况下改变内容的样式。
+    - `command`：所要实施的样式。
+    - `showDefaultUI`：是否使用默认的界面。
+    - `input`：该样式的辅助内容。
+- `queryCommandSupport(command)`：返回一个布尔值，浏览器是否支持`execCommand()`的某个命令。
+- `queryCommandEnabled()`：返回一个布尔值，表示当前是否可用`document.execCommand()`的某个命令。
+- `getSelection()`
