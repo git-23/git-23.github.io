@@ -125,3 +125,60 @@ HTML5 相较于 HTML 的更新
 > 如果声明一个局部变量与全局变量同名，这个局部变量会遮蔽全局变量
 > 从页面链接到多个 JavaScript 文件时，所有全局变量都定义在一个全局空间中
 
+## SECTION 5
+
+> 使用地理定位 API 时，都要使用小数值，西经和南纬都用负数表示。
+
+如何确定位置
+- IP 地址 任何地方都可以使用，IP 地址通常解析为你的 ISP 本地分局的位置，而不是你的具体位置。可以认为这种方法在城市级（有时甚至在街区级）很可靠
+- GPS 它能利用卫星提供极其精确的位置信息。不过，要使用 GPS，你的设备必须能看到天空，而且可能需要花很长时间才能得到位置
+- 蜂窝电话 可以根据你与一个或多个蜂窝电话基站的距离确定你的位置
+- Wi-Fi 使用一个或多个 Wi-Fi 接入点完成三角定位
+
+> 没办法知道设备采用哪一种方法得到位置，因为要由浏览器实现来确定如何得到位置
+
+- 当浏览器支持地理定位时，它的`navigation`对象中有一个`geolocation`属性
+- `geoloction`属性是一个对象，其中包含整个地理定位 API。这个 API 的主要方法是`getCurrentPosition(successHandler, errorHandler, options)`，他的工作是获取浏览器的位置。如果成功获取到位置就会调用方法参数中的函数，会向函数传入一个`position`对象，其中包括一个有经度和纬度的`coordinates`对象，`position`对象有一个`croods`属性，其中包含指向`coordinates`的一个引用。
+- 关于返回的错误对象`error.code`是错误码，`error.message`可能会有一些额外的信息。
+
+> 要计算两个坐标之间的距离，几乎所有人都会使用半正矢公式
+
+**Google Maps**
+- 引入`<script src="http://maps.google.com/maps/api/js?sensor=true"></script>`，一定要原样输入，如果只是使用地图不需要你的位置，可以输入`sensor=false`
+- Google API 希望纬度和经度包装在一个单独的对象中。要获得这样的一个对象，可以使用 Google 提供的一个构造函数：`var googleLatAndLong = new google.maps.LatLng(latitude, longtude)`
+- Google 提供了一些选项，可以设置这些选项来控制如何创建地图。
+```javascript
+var mapOption = {
+    zoom: 10,   //zoom可以指定为0-21的一个值，较大的数对应着进一步放大
+    center: googleLatAndLong,   //这是我们创建的新对象。我们希望地图在这个位置居中
+    mapTypeId: google.maps.MapTypeId.ROADMAP    //还可以试试SATELLIETE和HYBRID作为这个选项值
+}
+```
+- `map = new google.maps.Map(mapDiv, mapOptions)`这是 Google 提供的另一个 API ，它取一个元素和我们的选项，创建并返回一个地图对象。
+
+**增加一个大头钉标记**
+- 首先创建一个新函数`addMaker`，然后使用 Google API 创建一个标记
+```javascript
+function addMarker(map, latlong, title, content) {  //地图，google样式的经纬度， 标记的标题，信息窗口的一些内容
+    var markerOption = {
+        position: latlong,  //经纬度
+        map: map,   //地图
+        title: title,   //标题
+        clickable: true //是否可点击
+    }；
+
+    var marker = new google.maps.Marker(markerOptions); //使用 Google API 提供的另一个构造函数创建maker对象，并传入我们的配置对象
+
+//接下来，定义特定于信息窗口的一些选项，要创建这个信息窗口，然后使用 Google API 创建一个新的 InfoWindow 对象。
+    var infoWindowOptions = {   //为信息窗口定义一些选项
+        content: content,
+        position: latlong
+    };
+
+    var infoWindow = new google.maps.InfoWindow(infoWindowOption);//用它创建信息窗口
+
+    google.maps.event.addListener(marker, "click", function() {
+        infoWindow.open(map); 
+    })
+}
+```
