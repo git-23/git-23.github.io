@@ -155,6 +155,7 @@ var mapOption = {
 }
 ```
 - `map = new google.maps.Map(mapDiv, mapOptions)`这是 Google 提供的另一个 API ，它取一个元素和我们的选项，创建并返回一个地图对象。
+    - `map.panTo(latlong)`方法取这个 LatLng 对象并滚动地图，使你的新位置位于地图中心
 
 **增加一个大头钉标记**
 - 首先创建一个新函数`addMaker`，然后使用 Google API 创建一个标记
@@ -182,3 +183,217 @@ function addMarker(map, latlong, title, content) {  //地图，google样式的�
     })
 }
 ```
+
+**地理定位 API**
+
+**方法**
+- getCurrentPosition
+```javascript
+var positionOptions = {
+    enableHighAccuracy: false,  //启用高精度
+    timeout: Infinity,  //控制浏览器确定位置的时间，可以设定为一个值，单位为毫秒
+    maximumAge: 0   //设置了一个位置的最大年龄，超过这个年龄后浏览器需要重新计算位置
+}
+```
+- watchPosition 返回一个`watchId`，可以在任何时候使用这个 id 取消监视行为。
+    1. 你的应用调用`watchPosition`，传入一个成功处理函数
+    2. `watchPosition`在后台不断监视着你的位置
+    3. 你的位置改变时，`watchPosition`调用成功处理函数来报告你的新位置
+    4. `watchPosition`继续监视你的位置（并向成功处理程序报告），直到你调用`clearWatch`将它清除
+- clearWatch 参数为`watchId`
+
+**属性**
+
+**相关的对象**  
+- Position
+    - coords
+    - timestamp
+- Coordinates
+    - latitude 纬度
+    - longitude 经度
+    - accuracy 精度
+    - altitude
+    - altitudeAccuracy
+    - heading  朝向
+    - speed 速度
+
+## SECTION 6
+
+> 这种使用`XMLHttpRequest`获取数据的模式通常成为 Ajax 或 XHR
+
+**如何从 JavsScript 做出请求**
+1. 首先从一个 URL 开始，`var url = "http://xxx.com/xx.json";`
+2. 接下来创建一个请求对象，`var request = new XMLHttpRequest();`
+3. 接下来告诉请求对象我们希望它获取哪个 URL，以及要使用哪种请求，`request.open("GET", url)`
+    > open 只是用一个 URL 建立一个请求，并告诉这个请求对象要使用哪种请求。
+4. 提供一个处理程序，数据到达时就会调用这个处理程序
+    ```javascript
+    request.onload = function() {
+        if (request.status == 200) {
+            alert(reauest.responseText);
+            //可以从request对象的responseText属性得到响应
+        }
+    }
+    ```
+5. 告诉请求对象去获取数据，为此要使用`send()`方法
+    ```javascript
+    request.send(null)
+    //null 表示不发送任何数据
+    ```
+
+> `XMLHttpRequest`可以获取各种各样的数据。有些是 XML，但更多是 JSON (JavaScript Object Notation)
+
+**关于 JSON**
+*使用两个简单的方法调用可以让 JSON串 和 JS对象 相互转换*
+- `JSON.stringify(obj)`将对象转为 JSON字符串
+- `JSON.parse(jsonString)`将 JSON字符串 转为对象
+- 关于转换，并不是所有的一切都能转换为一个 JSON串，例如，方法就不能被转换为一个 JSON串
+
+> 我打赌你们肯定是碰到跨域问题了，因为你在从一个服务器请求数据，而页面并非来自这里。浏览器认为这是一个安全问题。
+> 这是一个浏览器安全策略，如果从某个域提供页面本身，安全策略不同从另一个域获取数据
+
+**JS 可接受的行为**
+1. 用户(通过浏览器)对一个 HTML 页面做出请求(当然，也包括所有相关的 Javascript 和 CSS)
+2. GoodDomain.com 的页面需要得到 GoodDomain.com 的一些数据，对这些数据做出了一些 XMLHttpRequest 请求
+    *数据与页面处于同一个服务器*
+
+**JS 不能接受的行为**
+1. 浏览器对 GoodDomain.com 上的一个页面做出请求，这可能包括 JavaScript 和 CSS 文件（同样位于 GoodDomain.com）
+2. 不过，现在代码希望从另一个来源得到数据，也就是 BadDomain.com.
+    1. 页面使用 XMLHttpRequest 向 BadDomain.com 请求数据
+    2. 浏览器看到这个请求指向与页面不同的域，就会停下，请求被拒绝
+    3. BadDomain.com 服务器根本没有看到请求，在它看到请求之前，浏览器安全策略已经中止了这个请求
+
+> 如果所构建的应用主要依赖你自己的数据，使用 XMLhttpRequest 通常是最好的办法
+
+**其他方法获取数据**
+- 确实还有一种基于 JSON 的方法，成为 JSONP(JSON with Padding)
+- 基本来说，这种方法就是让`<script>`标记完成获取数据的工作
+    1. 我们的 HTML 中包括一个`<script>`元素。这个 script 的源实际上是一个 Web 服务的 URL，这个 Web 服务将为我们提供数据的 JSON 对象
+    2. 浏览器遇到页面中的`<script>`元素时，再向src URL发出一个 HTTP 请求
+    3. 服务器像对待其他 HTTP 请求一样处理这个请求，并在响应中发回 JSON
+    4. JSON 响应的形式是字符串，再由浏览器解析和解释。任何数据类型都会转换为真正的 JavaScript 对象和值，另外所有的代码都将执行
+- 有填充的 JSON
+    1. 与前面一样，包含一个`<script>`元素。这个 script 的源是一个 Web 服务的 URL，这个 Web 服务将为我们提供 JSON 数据
+    2. 与前面一样，浏览器遇到页面中的 script 元素，并向 src URL 发送一个 HTTP 请求
+    3. 仍与前面一样，服务器正常处理这个请求，发回 JSON 串之前，首先把他包装到一个函数调用中
+    4. 解析和解释 JSON 响应时，它包装在一个函数调用中。所以会调用这个函数，并把由 JSON 串创建的对象传入这个函数
+
+> 只要我们希望浏览器为我们完成一个 JSONP 类型操作，就可以创建一个新的`<script>`元素
+
+**定时器**
+- `setInterval(handleRefrsh, 3000);`
+
+**浏览器缓存**
+> 如果你反复地获取同一个 URL，浏览器为了提高效率会把它缓存起来，所以你会反复地得到相同的缓存文件
+> 对于这个问题，有一个像 Web 一样老的简便"疗法"。我们只需要在 URL 末尾增加一个随机数，就会诱使浏览器认为它是以前从来没有见过的一个新 URL
+    ```javascript
+    var url = "http://gumball.wickedlysmart.com/?callback=updataSales" + "&random=" + (new Date()).getTime();
+    ```
+
+## SECTION 7
+
+**画布元素**
+- `<canvas id="" width="" height="">`可以设置它在 Web 页面中所占据的空间大小，默认的宽度和高度分别是300px、150px，在 CSS 中设置会对画布的大小进行缩放
+- 如果用户的浏览器不支持画布，可以在画布元素中放入希望显示给他们的文本
+
+**在画布上绘图**
+绘制一个矩形
+```javascript
+window.onload = function() {
+    var canvas = document.getElementById('tshirtCanvas');
+
+    var context = canvas.getContext('2D');
+    //请求画布提供一个可供绘制的上下文
+
+    context.fillRect(10, 10, 100, 100);
+    //矩形在画布上的 x, y位置，以及矩形的宽度和高度
+}
+```
+
+**上下文方法**
+- fillStyle 指定颜色
+- fillRect 填充矩形
+- strokeRect  矩形轮廓
+
+> 画布是 Web 页面中显示的图形区，上下文是与画布关联的一个对象。它定义了一组属性和方法，可以用来在画布上进行绘制。甚至可以保存上下文的状态，以后再恢复，有时这会很方便。
+> 画布设计用来支持多个接口，除了 2D，还有 3D，以及我们还没有想到的其他接口。通过使用上下文，就能在同一个画布元素中处理不同的接口。不能直接在画布上绘制，因为你需要一个上下文来指定使用哪个接口。
+
+**检测浏览器是否支持画布**
+```javascript
+var canvas = document.getElementById("tshirtCanvas");
+if (canvas.getContext) {
+    //you have canvas
+} else {
+    //sorry no canvas API support
+}
+```
+
+> 选择表单控件的`selectedIndex`属性会返回你在下拉菜单中所选属性的编号。每个选项列表都会转换为一个数组，各个选项会按一定顺序放在这个数组中。每个选项是一个对象
+
+**绘制一个三角形**
+```javascript
+context.beginPath();    //告诉画布我们要开始一个新路径
+context.moveTo(100, 150);   //移动到画布上一个指定点
+context.lineTo(250, 75);    //描路径
+context.lineTo(125, 30);
+context.closePath();    //闭合路径
+
+context.lineWidth = 5;
+context.stroke();
+context.fillStyle = "red";
+comtext.fill();
+```
+
+**绘制一个圆**
+```javascript
+context.beginPath();
+context.arc(150, 150, 50, 0, 2 * Math.PI, true)
+//圆心、半径、弧的起始角和终止角和创建圆弧方向（顺时针为 false ，逆时针为 true）
+//角可以负方向度量，也可以按正方向度量
+```
+
+**画布 API 中提供的文本方法和属性**
+- context.textAlign
+- context.fillText
+- context.strokeText
+- context.font
+- context.textBaseline
+- context.shadowBlur
+- context.shadowOffsetX
+- context.shadowOffsetY
+- context.shadowColor
+
+
+
+**在画布上放置图像**
+1. 要把这个图片放到画布上，首先需要一个 JavaScript image 对象
+    ```javascript
+    var twitterBird = new Image();
+    twitterBird.src = "twitterBird.png"
+    ```
+2. `context.drawImage(twitterBird, 20, 120, 70, 70);`
+3. 图片不会立即加载，绘制之前要确保图片已经完成加载
+    ```javascript
+    twitterBird.onload = funciton() {
+        context.drawImage(twitterBird, 20, 120, 70, 70);
+    };
+    ```
+
+## SECTION 8
+
+**video 元素**
+- contrals 提供控件
+- autoplay 一旦加载视频就自动播放
+- src
+- width, height
+- poster 不播放电影时显示的海报图片
+- loop
+- preload 设置为 none ,在点击播放之前不下载视频、设置为 metadata 只下载视频元数据、设置为 auto ,让浏览器自己决定
+
+**方法**
+- load
+- play
+- canPlayType
+
+
