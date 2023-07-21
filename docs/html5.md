@@ -395,5 +395,181 @@ context.arc(150, 150, 50, 0, 2 * Math.PI, true)
 - load
 - play
 - canPlayType
+    > 可以用`canPlayType`通过编程询问视频对象能不能播放某种格式
 
+> 画布可以用作为视频的显示表面，来实现定制控件或视频的其他效果
 
+#### 如何完成视频处理
+1. 视频播放器在后台解码，并播放视频
+2. 视频逐帧地复制到一个隐藏的缓冲画布并进行处理
+    **创建缓冲区**
+    ```javascript
+    buffer.drowImage(video, 0, 0, bufferCanvas.width, bufferCanvas.height);
+    //从视频中得到一个图像。将视频指定为源，drawImage会得到一个视频帧作为图像数据
+    var frame = buffer.getImageData(0, 0, bufferCanvas.width, bufferCanvas.height);
+    //从画布上下文中获取图像数据，然后把它存储在一个变量frame中，以便处理
+    ```
+    **处理缓冲区**
+    ```javascript
+    var length = frame.data.length/4
+    //frame的长度实际上是画布大小的4倍，因为每个像素都有四个值：RGBA
+    for (var i = 0; i < length; i++) {
+        var r = frame.data[i * 4 + 0];
+        var g = frame.data[i * 4 + 1];
+        var b = frame.data[i * 4 + 2];
+        if (effectFunction) {
+            effectFunction(i, r, g, b, frame.data);
+            //传入像素的位置、RGB值、以及frame.data数组，效果函数会用新的像素值更新frame.data数组
+        }
+    }
+    ```
+
+    **逐帧处理**
+    ```javascript
+    setTimeout(processFrame, 0);
+    //告诉 JavaScript 尽快再次运行 processFrame
+    ```
+
+    **效果滤光器函数**
+    ```javascript
+    function noir(pos, r, g, b, data) {
+        var brightness = (3*r + 4*g + b) >>> 3;
+        if (brightness < 0) brightness = 0;
+        data[pos * 4 + 0] = brightness;
+        data[pos * 4 + 1] = brightness;
+        data[pos * 4 + 2] = brightness;
+    }
+    ```
+3. 处理一帧之后，将它复制到另一个显示画布来观看
+    ```javascript
+    display.putImageData(frame, 0, 0);
+    //这个方法取帧中的数据，把它写到画布上指定的x, y位置
+    ```
+
+> 在 Web 上分发视频更有可能出现问题。另外，通过网络向一个浏览器或移动设备分发视频时，视频比特率的影响更大
+> 流式视频通常作为一个通用词汇，表示从 Web 得到视频发送到你的浏览器。不过渐进式视频和流式视频实际上都只是技术术语。这本书中我们一直在使用渐进式视频，这说明，我们获取视频时，都会使用 HTTP 获取一个文件，如 HTML 文件或图像，而且总是在获取时对它解码并播放。流式视频则使用一个协议分发视频，这个协议经过高度优化，可以采用一种最优的方式分发视频。
+
+#### 检测错误
+**使用 error 事件**
+```javascript
+video.addEventListener("error", errorHandler, false);
+//当出现错误的时候，会调用 errorHandler 函数
+```
+
+**错误码**
+- `error.code = 1` 如果通过网络得到视频的过程被网络中止（可能是应用户的请求）
+- `error.code = 2` 网络获取视频时如果被一个网络错误中断
+- `error.code = 3` 如果视频解码失败
+- `error.code = 4` 如果不支持指定的视频源，可能由于 URL 由问题
+
+## SECTION 9
+
+**Cookie 如何工作**
+1. 浏览器获取一个 Web 页面，服务器可以随响应发送一个 Cookie
+2. 下次浏览器向服务器发送请求时，它会随请求同时发送之前收到的 Cookie
+3. 服务器可以使用 Cookie 实现个性化的体验，Cookie 与一个域关联
+
+**HTML5 Web存储**
+1. 页面可以在浏览器的本地存储中存储一个或多个键值对
+2. 然后用键来获取相应的值
+
+#### 本地存储 API
+
+```javascript
+localStorage.setItem('sticky_0', 'Pick up dry cleaning');
+//可以使用 setItem 方法存入某个键值对
+localStorage['sticky_0'] = 'Pick up dry cleaning';
+
+var sticky = localStorage.getItem('sticky_0');
+//可以使用键从 localStorage 获取相应的值
+var sticky = localStorage['sticky_0'];
+
+for (var i = 0; i < localStorage.length; i++) {
+    var key = localStorage.key(i);
+    var value = localStorage[key];
+    alert(value);
+}
+//提供了属性 length 和方法 key()
+
+localStorage.clear();
+//它会删除与维护这个页面的源关联的所有数据项
+
+localStorage.removeItem(key);
+//取一个数据项的键，并从 localStorage 将这个数据项删除
+```
+
+> 每个域都有 5MB，在超出 5MB 的存储空间后，可能后抛出一个 QUOTA_EXCEEDED_ERR 的异常
+> 每个浏览器都会维护它自己的本地存储。所以如果你在 Safari 中创建了即时贴，就只能在 Safari 中看到它们
+
+> 只能存储字符串作为localStorage数据项的值，但完全可以把一个数组转换为字符串，例如使用 JSON 方法
+
+> 如果把使用 localStorage 的所有地方都替换为全局变量 sessionStorage，数据项就只会在浏览器会话期间存储。
+
+## SECTION 10
+
+**Web 工作线程如何工作**
+1. 要使用工作线程，浏览器首先必须创建一个或多个工作线程来帮助完成计算任务。每个工作线程都由各自的 JavaScript 文件定义，其中包含完成工作所需的全部代码
+2. 工作线程生活在一个相当受限的世界中。它们无法访问主浏览器代码能够访问的很多运行时对象，如 DOM 或主代码中的所有变量和函数
+3. 要让一个工作线程开始工作，浏览器通常会向它发送一个消息。工作线程代码接受这个消息，查看其中是否有特殊的指令，然后开始工作
+4. 工作线程完成它的工作时，会发回消息，并提供它处理的最终结果。主浏览器代码会得到这些结果，把它们以某种方式结合到页面中。
+
+> 如果支持工作线程，全局作用域 window 中会定义属性 Worker
+    ```javascript
+    if (window['Worker']) {
+        var status = document.getElementById('status');
+        status.innerHTML = 'Bummer, no Web workers';
+    }
+    ```
+
+**Web工作线程**
+- 创建新的工作线程
+    ```javascript
+    var worker = new Worker('worker.js');
+    ```
+- 要让工作线程做一些工作，一种方法是向它发送一个消息
+    ```javascript
+    worker.postMessage('ping');
+    //postMessage 可以发送字符串、数组、甚至 JSON 对象
+    //不能发送一个函数，因为函数可能包括一个 DOM 引用，导致工作线程有可能会改变 DOM
+    ```
+- 要想接受一个工作线程的消息，需要为工作线程的`onmessage`属性定义一个处理程序，一旦工作线程发来消息，就会调用我们的处理程序
+    ```javascript
+    worker.onmessage = function (event) {
+        var message = 'Worker says' + event.data;
+        document.getElementById('output').innerHTML = message;
+        //data 属性包含工作线程发送的消息，target 属性是发出这个消息的工作线程的一个引用
+    };
+    ```
+- 编写工作线程，每个工作线程都可以接受消息，只需要为工作线程提供一个处理程序来处理接受到的消息。
+    ```javascript
+    onmessage = pingPong;
+    //将工作线程的 onmessage 属性赋为 pingPong 函数
+    function pingPong(event) {
+        if (event.data == 'ping') {
+            postMseeage('pong');
+        }
+        //如果传入的消息种包含字符串 ping ，就发回一个消息 pong
+        //工作线程的消息将返回给创建这个工作线程的代码
+    }
+    ```
+
+Web 工作线程可以使用 importScripts 向工作线程导入一个或多个 Javascript 文件
+```javascript
+importScripts('http://bigscience.org/nuclear.js',
+              'http://nasa.gov/rocket.js',
+              'mylibs/autmsmasher.js');
+//调用函数时，会按顺序获取和执行各个 JavaScript URL
+```
+
+#### 计算 MandelBrot 集合
+
+```javascript
+for (i = 0; i < numberOgRows; i++) {    //需要循环处理图像的每一行
+    var taskForRow = createTaskForRow(i);   //taskForRow 对象包含计算一行所需的全部数据
+    var row = computeRow(taskForRow);
+    //对于每一行，需要计算这一行的像素
+    drawRow(row);
+    //在屏幕上绘制每一行
+}
+
+```
