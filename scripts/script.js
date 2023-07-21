@@ -1,6 +1,5 @@
 let docsList = ['markdown.md',
                 'dom.md',
-                'markdownSyntax.md',
                 'commonJS.md',
                 'html&css.md',
                 'html5.md'];
