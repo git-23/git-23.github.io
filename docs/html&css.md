@@ -223,4 +223,48 @@ CSS 盒子模型，context area, padding, border, margin
 
 浏览器会仔细检查所有的`<a>`元素，然后把它们增加到正确的伪类中。
 
+# SECTION 11
 
+**float 布局**
+1. 使用`float`属性
+    ```css
+    div {
+        float: right;
+        width: 200px;
+    }
+    ```
+2. 使用`margin`属性为浮动元素留出空间
+3. 使用`clear`属性解决底栏被覆盖问题
+    ```css
+    #footer {
+        clear: right;
+    }
+    ```
+*内联元素会避开浮动元素*
+
+**jello 布局**  
+锁定内容区的宽度，内容区不进行扩展
+
+**定位**
+绝对定位的元素可以修改`z-index`属性分层放置
+
+**表格显示**
+1. 选择一个容器
+    ```css
+    div {
+        display: table;
+        border-spacing: 10px;/*边框间距*/ 
+    }
+    ```
+2. 确定表格的行
+    ```css
+    div {
+        display: table-row;
+    }
+    ```
+3. 确定各行的列
+    ```css
+    div {
+        display: table-cell;
+    }
+    ```

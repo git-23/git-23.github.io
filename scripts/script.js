@@ -2,14 +2,17 @@ let docsList = ['markdown.md',
                 'dom.md',
                 'commonJS.md',
                 'html&css.md',
-                'html5.md'];
+                'html5.md',
+                'javascript.md'];
 
 function renderButton(docsList) {
     for (let item in docsList) {
-        let buttonNode = document.createElement('button');
-        buttonNode.innerText = docsList[item];
-        document.getElementById('menu').insertAdjacentElement('beforeend', buttonNode);
-        buttonNode.addEventListener('click', function () {renew(docsList[item])});
+        let Item = document.createElement('a');
+        Item.innerText = docsList[item];
+        let ListItemNode = document.createElement('li');
+        ListItemNode.appendChild(Item);
+        document.getElementById('menu').insertAdjacentElement('beforeend', ListItemNode);
+        ListItemNode.addEventListener('click', function () {renew(docsList[item])});
     }
 }
 
@@ -24,7 +27,7 @@ function renew(docsName) {
         var markdownText = xhr.responseText;
         
         // 在这里处理markdownText
-        document.getElementById('content').innerHTML = marked.parse(markdownText);
+        document.getElementById('noteDisplay').innerHTML = marked.parse(markdownText);
         hljs.highlightAll()
     }
     };

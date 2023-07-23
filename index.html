@@ -3,18 +3,23 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Animated Navigation</title>
+    <title>Notes Page</title>
     <link rel="stylesheet" href="./style/style.css" />
     <link rel="stylesheet" href="./style/github-markdown.min.css">
     <link rel="stylesheet" href="./style/github.min.css">
   </head>
   <body>
-    <div id="menu">
-        <a href="https://git-23.github.io/running_page/">running-page</a>
-        <br>
+    <div class="container">
+      <aside class="note-links">
+          <h2>Note Links</h2>
+          <ul id="menu">
+          </ul>
+          <a href="https://git-23.github.io/running_page/" target="_blank">Running Page</a>
+      </aside>
+      <main class="note-display markdown-body" id="noteDisplay">
+          <!-- Note content will be dynamically loaded here -->
+      </main>
     </div>
-
-    <div id="content" class="markdown-body"></div>
     
     <script src="./scripts/marked.min.js"></script>
     <script src="./scripts/highlight.min.js"></script>
