@@ -507,4 +507,284 @@
             //0000 0010 0000 0000
             view.setUint16(0, 0x0002, true);
             ```
-        
+    - 边界情形
+        - DataView 完成读写操作必须有充足的缓冲区，否则抛出`RangeError`
+        - DataView 在写入缓冲会对值进行类型转换，无法转换抛出`TypeError`
+- 定型数组
+    - 另一种形式的 ArrayBuffer 视图，但特定于一种 ElementType 且遵循系统原生的字节序
+        ```javascript
+        const buf = new ArrayBuffer(12);
+        //创建一个引用该缓冲的 Int32Array
+        const ints = new Int32Array(buf);
+        alert(ints.length); //3
+        //创建一个长度为 6 的 Int32Array
+        const ints2 = new Int32Array(6);
+        alert(ints2.length);    //6
+        alert(ints2.buffer.byteLength); //24
+        //创建一个包含 [2, 4, 6, 8] 的 Int32Array
+        const ints3 = new Int32Array([2, 4, 6, 8]);
+        const ints4 = new Int16Array(ints3);
+        const ints5 = Int16Array.from([3, 5, 7, 9]);
+        const floats = Float32Array.of(3.14, 2.718, 1.618);
+        ```
+    - `BYTES_PER_ELEMENT`属性，返回该类型数组中每个元素大小
+    - 定型数组与普通数组有很多相似的地方
+        - 具有`[Symbol.iterator]`符号属性，可以通过 for...of 循环和扩展运算符操作
+        - `concat()`, `splice()`, 栈及队列方法不适用
+        - `set()`
+            - 从提供的数组或定型数组中提取值复制到当前定型数组中指定的索引位置
+        - `subarray()`
+            - 从原始定型数组中复制的值返回一个新定型数组，开始索引和结束索引可选
+    - 上溢和下溢
+        - 存在一种夹板数组类型，`Uint8ClampedArray`
+            - 不允许溢出
+            - 超过 255 的值会被向下舍入为 255
+            - 小于 0 的值会被向上舍入为 0
+        - > `Uint8ClampedArray`完全是 HTML5canvas 元素的历史留存。除非真的做跟 canvas 相关的开发，否则不要使用它。
+
+**Map**
+- 创建
+    - 使用`new`关键字和 Map 构造函数可以创建一个空映射
+    - 如果想要初始化，可以传入一个可迭代对象
+        ```javascript
+        const m2 = new Map({
+            [Symbol.iterator]: function* () {
+                yield ['key1', 'val1'];
+                yield ['key2', 'val2'];
+                yield ['key3', 'val3'];
+            }
+        });
+        alert(m2.size); //3
+        ```
+- 属性
+    - `size`
+        - 获取映射中键值对的数量
+- 方法
+    - `set()`
+        - 在映射中添加键值对
+        - `set()`方法返回映射实例，因此可以把多个操作连缀起来
+    - `get()`, `has()`
+        - 查询键值对
+    - `delete()`, `clear()`
+        - 删除键值对
+- Map 可以使用任何 JavaScript 数据类型作为键
+- Map 内部使用 SameValueZero(内部定义) 比较操作来检查键的匹配性
+    - 基本上相当严格对象相等的标准
+    - 独立实例不冲突
+    - 与严格相等一样，作为键的对象和其他集合类型，在内容修改时仍然保持不变
+    - 可能有一些一项不到的冲突
+        ```javascript
+        const m = new Map();
+        // a, b = NaN
+        const a = 0/'', 
+              b = 0/'', 
+              pz = +0,
+              nz = -0;
+        m.set(a, 'foo');
+        m.set(pz, 'bar');
+        alert(m.get(b));    //foo
+        alert(m.get(nz));   //bar
+        ```
+- 与 Object 不同，Map 实例会维护键值对的插入顺序，因此可以根据插入顺序执行迭代操作
+    - 映射实例可以提供一个迭代器，以插入顺序生成 [key, value] 形式的数组
+    - 可以通过`entries()`方法或者`[Symbol.iterator]`属性(引用`entries()`方法)取得这个迭代器
+    - 因为`entries()`是默认迭代器，所以可以直接对映射实例使用扩展操作
+- `forEach()`
+    - 接收回调函数和可选的`this`取值
+    - 回调函数有val, key两个参数
+- `keys()`, `values()`
+    - 分别返回以插入顺序生成键和值的迭代器
+- 与 Object 的比对
+    - Map 内存占用小于 Object
+    - 插入 Map 要稍快一些
+    - Object 在一些特定的情况下查找要优于 Map
+    - Map 删除属性的性能要好于 Object
+
+**WeakMap**
+- WeakMap 的 API 是 Map 的子集
+- 弱映射中的键只能是对象
+- 弱映射的键不属于正式的引用，不会阻止垃圾回收
+- 没有`clear()`和迭代方法
+- 使用弱映射
+    - 私有变量
+        - 可以将私有变量放在弱映射中
+            ```javascript
+            const wm = new WeakMap();
+            class User {
+                constructor(id) {
+                    this.idProperty = Symbol('id');
+                    this.setId(id);
+                }
+                setPrivate(property, value) {
+                    const privateMembers = wm.get(this) || {};
+                    privateMembers[property] = value;
+                    wm.set(this, privateMembers);
+                }
+                getPrivate(property) {
+                    return wm.get(this)[property];
+                }
+                setId(id) {
+                    this.setPrivate(this.idProperty, id);
+                }
+                getId() {
+                    return this.getPrivate(this.idProperty);
+                }
+            }
+            const user = newUser(123);
+            alert(user.getId());    //123
+            user.setId(456);
+            alert(user.getId());    //456
+            //并不是真正私有的
+            alert(wm.get(user)[user.idProperty]);   //456
+            ```
+        - 外部代码只需要拿到对象实例的引用和弱映射，就可以取得'私有'变量了，为了避免这种访问，可以用一个闭包把 WeakMap 包装起来
+            ```javascript
+            const User = (() => {
+                const wm = new WeakMap();
+                class User {
+                    constructor(id) {
+                        //构造函数内容，同上
+                    }
+                    //其他函数，同上
+                }
+                return User;
+            })
+            const = new User(123);
+            ```
+        - 整个代码也完全陷入了 ES6 之前的闭包私有变量模式
+    - DOM 节点元数据
+        ```javascript
+        const wm = new WeakMap();
+        const loginButton = document.querySelector('#login');
+        // 给这个节点带来一些元数据
+        wm.set(loginButton, {disabled: true});
+        ```
+
+**Set**
+- 使用`new`关键字和`Set()`构造函数可以创建一个空集合
+    - 可以传入可迭代对象作为参数初始化集合，包含插入新集合实例的元素
+        ```javascript
+        const s2 = new Set({
+            [Symbol.iterator]: function*() {
+                yield 'val1';
+                yield 'val2';
+                yield 'val3';
+            }
+        });
+        alert(s2.size); //3
+        ```
+- `add()`, `has()`, `delete()`, `clear()`
+    - `add()`方法返回集合的实例
+    - `delete()`返回一个布尔值，表示集合中是否存在要删除的值
+- Set 维护插入值的顺序，支持按顺序迭代
+    - `values()`, `keys()`(别名), `[Symbol.iterator]`(引用`values()`方法)返回迭代器
+    - 因为`values()`是默认迭代器，所以可以直接对集合实例使用扩展操作，把集合转换为数组
+    - `entries()`
+        ```javascript
+        const s = new Set(['val1', 'val2']);
+        for (let pair of s.entries()) {
+            console.log(pair);
+        }
+        // ['val1', 'val1']
+        // ['val2', 'val2']
+        // ['val3', 'val3']
+        ```
+    - `forEach()`
+        - 传入一个回调函数，以及可选的`this`值
+        - 回调函数具有 val, dupVal 两个参数
+- 定义正式集合操作
+
+**WeakSet**
+- 弱集合的值不属于正式的引用
+- 弱集合中的值只能是对象
+- 弱集合不可迭代
+- 可以使用弱集合给对象打标签
+
+**迭代器和生成器**
+- 计数循环就是一种最简单的迭代
+    - 迭代之前需要如何使用数据结构
+    - 遍历顺序并不是数据结构固有的
+- `Array.prototype.forEach()`
+    - 解决了单独记录索引和通过数组对象取得值的问题
+    - 没有办法表示迭代何时终止
+    - 只适用于数组
+    - 回调结构笨拙
+
+**迭代器模式**
+- 把有些结构称为'可迭代对象'，因为它们实现了正式的 Iterable 接口，而且可以通过迭代器 Iterator 消费
+- 可以把可迭代对象理解成数组或集合这样集合类型的对象
+    - 它们包含的元素都是有限的，而且都具有无歧义的遍历顺序
+    - 可迭代对象不一定是集合对象，如计数循环， 临时性可迭代对象可以实现为生成器
+- 任何实现 Iterable 接口的数据结构都可以被实现 Iterator 接口的结构消费
+- 实现 Iterable 接口要求同时具备两种能力
+    - 支持迭代的自我识别能力
+    - 创建实现 Iterator 接口的对象的能力
+- 字符串、数组、映射、集合、arguments对象、DOM 集合属性都实现了 Iterable 接口
+- 实现可迭代协议的所有类型都会自动兼容接收可迭代对象的任何语言特性
+    - for-of 循环、数组解构、扩展操作符、`Array.from()`、创建集合、创建映射、`Promise.all()`、`Promise.race()`、yield 操作符
+    - 这些原生语言结构会在后台调用提供的可迭代对象的这个工厂函数，从而创建一个迭代器
+- 如果对象原型链上的父类实现了 Iterable 接口，那这个对象也就实现了这个接口
+
+**迭代器**
+- 每次成功调用`next()`，都会返回一个`iteratorResult`对象
+    - `done`表示是否还可以再次调用`next()`取得下一个值
+    - `value`包含可迭代对象的下一个值或`undefined`
+- 只要迭代器到达 done: true 状态，后续调用`next()`就返回一样的值了
+- 每个迭代器都代表对可迭代对象的一次性有序遍历。不同迭代器的实例相互之间没有联系
+- 迭代器并不与可迭代对象某个时刻的快照绑定
+    - 如果可迭代对象在迭代期间被修改了，那么迭代器也会反映相应的变化
+    - 迭代器维护着一个指向可迭代对象的引用，因此迭代器会阻止垃圾回收程序回收可迭代对象
+
+**自定义迭代器**
+- 任何实现了 Iterator 接口的对象都可以作为 迭代器使用
+- 一个可迭代对象能够创建多个迭代器            
+- 提前终止迭代器
+    - 可能情况
+        - for-of 循环通过语句退出
+        - 解构操作并未消费所有值
+    - 可选的`return()`方法用于指定在迭代器提前关闭时的逻辑
+        - 要知道迭代器是否可关闭，可以测试实例的`return`属性是不是函数
+        - 给不可关闭的迭代器增加`return()`方法不能让它变成可关闭的
+        - 调用`return()`方法不会强制迭代器进入关闭状态
+
+**生成器**
+- 定义
+    - 拥有在函数块内暂停和恢复代码执行的能力
+- 用途
+    - 使用生成器自定义迭代器
+    - 实现协程
+- 形式
+    - 一个函数，函数名称前面加一个星号(`*`)  
+    - 箭头函数不能被用来定义生成器函数
+    - 标识生成器函数的星号不受两侧空格影响
+- 执行
+    - 调用生成器函数会产生一个生成器对象
+        - 生成器对象一开始处于暂停执行的状态
+        - 生成器也实现了 Iterator 接口，具有`next()`方法
+    - 调用`next()`方法会让生成器开始或恢复执行
+        - `next()`方法返回值类似迭代器，具有`done`和`value`属性
+        - `value()`属性是生成器函数的返回值
+    - 生成器函数在遇到`yield`关键字后会停止执行
+        - 通过`yield`退出，`done: false`
+        - 通过`return`退出，`done: true`
+        - `yield`关键字必须直接位于生成器函数定义中
+- 使用
+    - 把生成器对象当成可迭代对象
+        ```javascript
+        function* nTimes(n) {
+            while(n--) {
+                yield;
+            }
+        }
+        for (let _ of nTimes(3)) {
+            console.log('foo');
+        }
+        ```
+    - 上一次让函数暂停的`yield`关键字会接收到传给`next()`方法的第一个值
+        - 第一次调用`next()`传入的值不会被使用
+    - 可以用星号增强`yield`的行为，让它能够迭代一个可迭代对象
+        ```javascript
+        function* generatorFn() {
+            yield*[1, 2, 3];
+        }
+        ```
