@@ -788,3 +788,189 @@
             yield*[1, 2, 3];
         }
         ```
+    - 生成器对象除了`next()`以及可选的`return()`方法外，还具有`throw()`方法
+        - `return()`方法会强制生成器进入关闭状态，提供给`return()`方法的值，就是终止迭代器对象的值
+        - `throw()`方法将一个错误注入到生成器对象中。错误未被生成器函数内部处理，则关闭生成器
+
+**对象属性**
+- ECMA-262 使用一些内部特性描述属性的特征
+- 分为数据属性和访问器属性两种
+    - 数据属性会包含一个保存数据值的位置，值会从这个位置读取
+        - 数据属性有四个特性描述它们的行为
+        - 要修改属性的默认特性，必须使用`Object.defineProperty()`方法
+    - 访问器属性不包含数据值。反而包含一个获取函数和一个设置函数
+        - 访问器属性不能直接定义，必须使用`Object.defineProperty()`方法
+    - 可以使用`Object.defineProperties()`一次性定义多个属性
+    - 使用`Object.getOwnPropertyDescriptor()`方法可以取得指定属性的属性描述符
+
+**合并对象**
+- `Object.assign()`
+    - 接收一个目标对象和一个或多个源对象作为参数
+    - 将每个源对象中可枚举和自有属性复制到目标对象
+    - 返回修改后的目标对象
+
+**Object.is()**
+- 类似全等操作符，但考虑到了一些边界情形
+    ```javascript
+    Object.is(+0, -0);  //false
+    Object.is(+0, 0);   //true
+    Object.is(-0, 0);   //false
+    Object.is(NaN, NaN);    //true
+    ```
+- 要检查超过两个值，递归地利用相等性传递即可
+    ```javascript
+    function recursivelyCheckEqual(x, ...rest) {
+        return Object.is(x, rest[0]) && (rest.length < 2 || recursivelyCheckEqual(...rest));
+    }
+    ```
+
+**增强的对象语法**
+- 属性值简写
+    - 简写属性名只要使用变量名，就会自动被解释为同名的属性键
+- 可计算属性
+    - 中括号包裹的对象属性键告诉运行时将其作为表达式求解
+- 简写方法名
+    - 简写方法名对获取函数和设置函数适用
+        ```javascript
+        let person = {
+            sayName(name) {
+                console.log(`My name is ${name}`);
+            },
+            get name() {},
+            set name() {}
+        };
+        ```
+    - 简写方法名与可计算属性键相互兼容
+- 对象解构
+    - 使用与对象匹配的结构来实现对象属性赋值
+        ```javascript
+        let person = {
+            name: 'Matt',
+            age: 27
+        };
+        let {
+            name: personName,
+            age: personAge
+        } = person;
+        ```
+    - 也可以使用简写语法
+        ```javascript
+        let {name, age} = person;
+        ```
+    - 可以在解构赋值的同时定义默认值
+        ```javascript
+        let {name, job='engineer'} = person;
+        ```
+    - 解构在内部使用函数`ToObject()`把源数据结构转换为对象
+        - `null` 和 `undefined` 不能被解构，否则会抛出错误
+    - 解构并不要求变量必须在解构表达式中声明， 但如果给事先声明的变量赋值，则赋值表达式必须包含在一对括号中
+        ```javascript
+        let personName, personAge;
+        ({name: personName, age: personAge} = person);
+        ```
+    - 可以使用嵌套解构
+        ```javascript
+        let person = {
+            job: {
+                title: 'engineer'
+            }
+        }
+        let { job: {title} } = person;
+        ```
+    - 在函数参数列表中也可以进行解构赋值
+
+**工厂模式**
+- 使用函数封装创建对象的代码
+- 没有解决对象标识问题(新创建的对象是什么类型)
+
+**构造函数**
+- 要创建构造函数的实例，要使用`new`操作符
+    1. 在内存中创建新对象
+    2. 新对象内部的`[[Prototype]]`特性被赋值为构造函数的`prototype`属性
+    3. 构造函数内部的`this`被赋值为这个新对象
+    4. 执行构造函数内部的代码
+    5. 如果构造函数不返回非空对象，则返回刚创建的新对象
+- 创建的实例对象`constructor`属性指向构造函数
+- 自定义构造函数可以确保实例被标识为特定类型
+- 定义的方法会在每个实例上都创建一遍
+
+**原型模式**
+- 函数与其原型对象通过`prototype`和`constructor`属性相互引用
+- 构造函数创建实例内部`[[Prototype]]`指针就会被赋值为构造函数的原型对象
+- `instanceof`操作符和`isPrototype()`方法检查实例的原型链中是否包含指定构造函数的原型
+- `Object.getPrototypeOf()`方法返回参数的内部特性`[[Prototype]]`的值
+- `Object.setPrototypeOf()`方法可以向实例的私有特性`[[Prototype]]`写入一个新值
+- `Object.create()`方法创建一个新对象，以参数对象作为原型
+- 在访问对象属性时，会按照这个属性的名称开始搜索。搜索开始于对象实例本身，如果在这个实例上发现了给定的名称，则返回该名称对应的值。如果没有找到这个属性，则搜索会沿着指针进入原型对象
+    - 虽然可以通过实例读取原型对象上的值，但不可能通过实例重写这些值。如果在实例上添加了一个与原型对象同名的属性，那就会在实例上创建这个属性，这个属性会遮住原型对象上的属性。
+- `hasOwnProperty()`方法在属性存在于调用它的对象实例上时返回`true`
+- `Object.getOwnPropertyDescriptor()`方法只对实例属性有效
+- `in`操作符
+    - 在单独使用操作符时，只要属性能在对象上访问到，就返回`true`
+    - 在 for-in 循环中使用`in`操作符时，可通过对象访问且可以被枚举的属性都会返回，包括实例属性和原型属性
+- `Object.keys()`接收一个对象作为参数，返回包含该对象所有可枚举的实例属性名称的字符串数组
+- `Object.getOwnPropertyNames()`返回一个数组，列出所有实例属性，无论是否可以枚举
+- `Object.getOwnPropertySymbols()`类似上一个方法，只是针对符号
+- `Object.values()`, `Object.entries()`接收一个对象，返回它们内容的数组
+    - 非字符串属性转换为字符串输出
+    - 这两个方法执行浅复制
+    - 符号属性会被忽略
+- 原型的问题
+    - 弱化了向构造函数传递初始化参数的能力
+    - 共享特性
+
+**原型继承**
+- 原型链的问题
+    - 使用原型实现继承时，原型实际上变成了另一个类型的实例。这意味着原先的实例属性变成了共享的原型属性
+    - 子类型在实例化时不能给父类型的构造函数传参
+- 盗用构造函数
+    - 使用`apply()`和`call()`方法以新创建的对象为上下文执行构造函数
+        ```javascript
+        function SuperType() {
+            this.colors = ['red', 'blue', 'green'];
+        }
+        function SubType() {
+            SuperType.call(this);
+        }
+        ```
+    - 优点
+        - 可以在子类构造函数中向父类构造函数传参
+    - 缺点
+        - 函数不能重用
+        - 子类不能访问父类原型上定义的方法
+- 组合继承
+    - 使用原型链继承原型上的属性和方法，通过盗用构造函数继承实例属性
+        ```javascript
+        function SubType(name, age) {
+            SuperType.call(this, name);
+            this.age = age;
+        }
+        SubType.prototype = new SuperType();
+        SubType.prototype.sayAge = function() {};
+        ```
+- 寄生式继承
+    - 盗用构造函数继承实例属性，使用父类原型的浅拷贝作为子类原型
+
+**类**
+- 与函数进行对比
+    - 类似函数声明，定义类有类声明和类表达式两种
+    - 函数声明可以提升，类声明不能
+    - 函数受函数作用域限制，类受块作用域限制
+- 类可以包含构造函数、实例方法、获取函数、设置函数和静态类方法
+- 类表达式的名称是可选的，可以通过`name`属性取得类表达式的名称字符串
+- 构造函数
+    - `constructor`关键字用来在类定义块内部创建类的构造函数
+    - 使用`new`操作符创建类的新实例时，调用构造函数
+        1. 在内存中创建一个新对象
+        2. 新对象内部的`[[Prototype]]`指针被赋值为构造函数的`prototype`属性
+        3. 构造函数内部的`this`被赋值为这个新对象
+        4. 执行构造函数内部的代码
+        5. 在构造函数不返回非空对象的前提下返回刚创建的对象
+    - 类实例化时传入的参数会用作构造函数的参数
+    - 调用类构造函数时如果忘了使用`new`会抛出错误
+- ECMAScript 类就是一种特殊函数
+- 类标识符也有`prototype`属性，而这个原型也有一个`constructor`属性指向类自身
+- 在构造函数内部添加实例属性
+- 在类块中定义的方法作为原型方法
+- 静态类成员在类定义中使用`static`关键字作为前缀。静态成员中，`this`引用类自身
+- 类定义不显式支持在原型或类上添加成员数据，但在类外部，可以手动添加
