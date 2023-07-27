@@ -3,23 +3,18 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Notes Page</title>
+    <title>Chaos One</title>
     <link rel="stylesheet" href="./style/style.css" />
     <link rel="stylesheet" href="./style/github-markdown.min.css">
     <link rel="stylesheet" href="./style/github.min.css">
   </head>
   <body>
-    <div class="container">
-      <aside class="note-links">
-          <h2>Note Links</h2>
-          <ul id="menu">
-          </ul>
-          <a href="https://git-23.github.io/running_page/" target="_blank">Running Page</a>
-      </aside>
-      <main class="note-display markdown-body" id="noteDisplay">
-          <!-- Note content will be dynamically loaded here -->
-      </main>
-    </div>
+    <nav>
+      <button id="todo">待读书单</button>
+      <button id="list">笔记</button>
+      <button id="page">跑步记录</button>
+    </nav>
+    <div id="container" class="markdown-body"></div>
     
     <script src="./scripts/marked.min.js"></script>
     <script src="./scripts/highlight.min.js"></script>
