@@ -1,6 +1,16 @@
 let bookList = [
-    ['JavaScript 高级程序设计', true],
-    ['ES6标准入门', false],
+    ['Head First HTML 与 CSS (第二版)', true],
+    ['Head First HTML5 Programming (中文版)', true],
+    ['JavaScript 高级程序设计 第4版', false],
+    ['ES6标准入门 (第3版)', false],
+    ['你不知道的JavaScript (上卷)', false],
+    ['你不知道的JavaScript (中卷)', false],
+    ['你不知道的JavaScript (下卷)', false],
+    ['Web性能权威指南', false],
+    ['HTTP权威指南', false],
+    ['Node与Express开发', false],
+    ['Webpack 官方文档', false],
+    ['Vue 官方文档', false],
 ], docsList = [
     'markdown.md',
     'dom.md',
