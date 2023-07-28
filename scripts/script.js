@@ -17,6 +17,7 @@ let bookList = [
     'html&css.md',
     'html5.md',
     'javascript.md',
+    '函数.md',
 ];
 
 function addEventListenerInButton() {
