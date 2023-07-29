@@ -18,6 +18,7 @@ let bookList = [
     'html5.md',
     'javascript.md',
     '函数.md',
+    '期约与异步函数.md',
 ];
 
 function addEventListenerInButton() {
