@@ -13,8 +13,8 @@ let bookList = [
     ['Vue 官方文档', false],
 ], docsList = [
     'markdown.md',
-    'dom.md',
-    'html&css.md',
+    'HTML.md',
+    'CSS.md',
     'html5.md',
     'javascript.md',
     '函数.md',
@@ -49,7 +49,7 @@ function clickList() {
     container.innerHTML = '';
     for (let item of docsList) {
         let docsItem = document.createElement('button');
-        docsItem.innerHTML = item;
+        docsItem.innerHTML = item.slice(0, -3);
         container.append(docsItem);
         docsItem.addEventListener('click', () => void displayNote(item))
     }
