@@ -30,3 +30,10 @@ HTML 中`<img>`标记可以用`height`, `width`属性指定图片的信息，`al
 
 可以在`<style>`标记中放置 CSS 规则，也可以使用`link`标记引入外部样式表
 
+## JS
+
+使用`<script>`元素可以引入外部域的 JS 文件，`defer`和`async`属性可以使脚本异步执行，`async`不保证脚本按出现的顺序执行
+
+动态插入 DOM 的`<script>`相当于添加了`async`属性
+
+在浏览器不支持 JS 时，`<noscript>`元素中的内容将被显示
