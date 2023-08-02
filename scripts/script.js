@@ -18,6 +18,7 @@ let bookList = [
     'JS基本语法.md',
     'JS内置对象-部分.md',
     'JS数组.md',
+    'JS映射与集合.md',
     'html5.md',
     'javascript.md',
     '函数.md',
