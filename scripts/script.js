@@ -19,10 +19,13 @@ let bookList = [
     'JS内置对象-部分.md',
     'JS数组.md',
     'JS映射与集合.md',
-    'html5.md',
-    'javascript.md',
-    '函数.md',
-    '期约与异步函数.md',
+    'JS迭代器和生成器.md',
+    'JS对象.md',
+    'JS原型.md',
+    'JS类.md',
+    'JS代理与反射.md',
+    'JS函数.md',
+    'JS期约与异步函数.md',
 ];
 
 function addEventListenerInButton() {
